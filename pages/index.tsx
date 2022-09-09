@@ -2,13 +2,16 @@ import { Box, Button, Heading, Text, Image } from "grommet";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useUser } from "@supabase/auth-helpers-react";
 
 const Home: NextPage = () => {
   const router = useRouter();
+  const user = useUser();
+
   return (
     <>
       <Head>
-        <title>FreeLoaders @ UC</title>
+        <title>UC FreeLoaders</title>
         <meta name="description" content="Pay less for essential services" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -24,14 +27,20 @@ const Home: NextPage = () => {
         <Box align="center" direction="column">
           <Heading>FreeLoaders</Heading>
           <Text>
-            Pay less for <em>essential</em> services!
+            pay less for <em>essential</em> services!
           </Text>
         </Box>
         <Box align="center">
           <Button
             primary
-            label="get started"
-            onClick={() => router.push("/signin")}
+            label={user ? "visit the dashboard" : "get started"}
+            onClick={() => {
+              if (!user) {
+                router.push("/enter");
+              } else {
+                router.push("/dashboard");
+              }
+            }}
           />
         </Box>
         <Box margin={{ top: "large" }}>
