@@ -9,8 +9,19 @@ export type CompletePackage = {
 };
 
 export type ShellPackage = {
-  id: string;
-  createdAt: string;
+  email: string;
+  password: string;
+};
+
+export type PackageInfoResponse = {
   userId: string;
-  initialBalance: number;
+  userLevel: string;
+  phone: string;
+  referring: string;
+  referred: string;
+  accountReferred: string;
+  token: string;
+  accountNumber: string;
+  accountBalance: number;
+  zipcode: string;
 };

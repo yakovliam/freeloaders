@@ -1,51 +1,55 @@
 import { NextPage } from "next";
 import Head from "next/head";
 import { withPageAuth } from "@supabase/auth-helpers-nextjs";
-import {
-  Box,
-  Button,
-  Text,
-  Spinner,
-  Heading,
-  Tag,
-  TextInput,
-  Paragraph,
-  Markdown,
-  List,
-  Card,
-  CardBody,
-} from "grommet";
+import { Box, Button, Text, Spinner, Heading, Paragraph } from "grommet";
 import { Previous } from "grommet-icons";
 import { useRouter } from "next/router";
 import { CompletePackage } from "../../../types/package";
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 export const getServerSideProps = withPageAuth({ redirectTo: "/enter" });
 
+const fetcher = (args: any) => fetch(args).then((res) => res.json());
+
 const Info: NextPage = () => {
   const router = useRouter();
-  const id = router.query.id;
+  const id: string | string[] | undefined = router.query.id;
 
   const [completePackage, setPackage] = useState<CompletePackage | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const { data, error } = useSWR(
+    "/api/packages/info?id=" + String(id),
+    fetcher,
+    {
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Never retry on 404.
+        if (error.status === 404) return;
+
+        // Only retry up to 10 times.
+        if (retryCount >= 10) return;
+
+        // Retry after 5 seconds.
+        setTimeout(() => revalidate({ retryCount }), 2000);
+      },
+      loadingTimeout: 3000,
+    }
+  );
 
   useEffect(() => {
-    async function fetchData() {
-      fetch("/api/packages/info?" + new URLSearchParams({ id: id }))
-        .then((response) => response.json())
-        .then((data) => {
-          setPackage(data);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    if (error) {
+      console.error(error);
+      return;
     }
 
-    fetchData();
-  }, []);
+    if (data) {
+      if (data.message) {
+        return;
+      }
+      setPackage(data);
+      return;
+    }
+  }, [data, error]);
 
   return (
     <>
@@ -73,7 +77,7 @@ const Info: NextPage = () => {
             />
             <Heading>use this package</Heading>
 
-            {isLoading ? (
+            {!completePackage ? (
               <Spinner size="xlarge" />
             ) : (
               <>

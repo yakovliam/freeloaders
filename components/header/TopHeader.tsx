@@ -2,11 +2,11 @@ import { Box, Button, Header, Menu } from "grommet";
 import { Dashboard, Home } from "grommet-icons";
 import { useRouter } from "next/router";
 import { supabase } from "../../utils/supabase";
-import useUser from "../../hooks/useUser";
+import { useUser } from "@supabase/auth-helpers-react";
 
 function TopHeader() {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const user = useUser();
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -17,7 +17,7 @@ function TopHeader() {
   return (
     <Header background="brand">
       <Button icon={<Home />} hoverIndicator onClick={() => router.push("/")} />
-      {user && !isLoading && (
+      {user && (
         <Box direction="row">
           <Button
             icon={<Dashboard />}

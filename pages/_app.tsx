@@ -9,22 +9,25 @@ import Device from "../components/device";
 import NotMobile from "../components/views/notmobile/NotMobile";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "../utils/supabase";
+import { SWRConfig } from "swr";
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <SessionContextProvider supabaseClient={supabase}>
-      <Grommet theme={theme}>
-        <Device>
-          {({ isMobile, isTablet }) => {
-            if (isMobile && !isTablet)
-              return (
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              );
-            return <NotMobile />;
-          }}
-        </Device>
-      </Grommet>
+      <SWRConfig>
+        <Grommet theme={theme}>
+          <Device>
+            {({ isMobile, isTablet }) => {
+              if (isMobile && !isTablet)
+                return (
+                  <Layout>
+                    <Component {...pageProps} />
+                  </Layout>
+                );
+              return <NotMobile />;
+            }}
+          </Device>
+        </Grommet>
+      </SWRConfig>
     </SessionContextProvider>
   );
 }
