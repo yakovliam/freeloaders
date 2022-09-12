@@ -34,7 +34,7 @@ const Help: NextPage = () => {
         pad="medium"
         flex="grow"
       >
-        <Box align="center" direction="column" gap="medium">
+        <Box align="center" direction="column" gap="small">
           <Heading>help</Heading>
           {notificationIsOpen && (
             <Notification
@@ -49,6 +49,17 @@ const Help: NextPage = () => {
           <Anchor color={"accent-3"} href={"mailto:help@ucfreeloaders.org"}>
             help@ucfreeloaders.org
           </Anchor>
+        </Box>
+        <Box align="center" direction="column" gap="small">
+          <Heading>about us</Heading>
+          <Box width={"medium"}>
+            <Text textAlign="center">
+              FreeLoaders @ UC provides access to laundry services at UC for a
+              lower cost than the competition. We partner with CSC ServiceWorks
+              at UC to provide these services in a more ethical way by cutting
+              out the vendor fees through our own transaction system.
+            </Text>
+          </Box>
         </Box>
       </Box>
     </>
