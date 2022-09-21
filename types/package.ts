@@ -25,3 +25,7 @@ export type PackageInfoResponse = {
   accountBalance: number;
   zipcode: string;
 };
+
+export type FreePackageRefreshTimeInHoursResponse = {
+  time: number;
+};

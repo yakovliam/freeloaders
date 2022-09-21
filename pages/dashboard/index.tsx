@@ -4,6 +4,7 @@ import { withPageAuth } from "@supabase/auth-helpers-nextjs";
 import {
   Box,
   Button,
+  Clock,
   DataTable,
   Heading,
   Meter,
@@ -14,10 +15,14 @@ import {
 import { Login } from "grommet-icons";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { CompletePackage } from "../../types/package";
+import {
+  CompletePackage,
+  FreePackageRefreshTimeInHoursResponse,
+} from "../../types/package";
 import useSWR from "swr";
-import { loadStripe } from "@stripe/stripe-js";
 import { supabase } from "../../utils/supabase";
+import { useUser } from "@supabase/auth-helpers-react";
+import { UserLastRefreshResponse } from "../../types/user";
 
 export const getServerSideProps = withPageAuth({ redirectTo: "/enter" });
 
@@ -25,57 +30,148 @@ const fetcher = (args: any) => fetch(args).then((res) => res.json());
 
 function Dashboard() {
   const router = useRouter();
-
   const [packages, setPackages] = useState<CompletePackage[]>([]);
+  const [refreshTimeInHours, setRefreshTimeInHours] = useState<number | null>(
+    null
+  );
+  const [lastRefreshTimestamp, setLastRefreshTimestamp] = useState<Date | null>(
+    null
+  );
+  const user = useUser();
 
-  const { data, error } = useSWR("/api/packages/get", fetcher, {
-    onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-      // Never retry on 404.
-      if (error.status === 404) return;
+  const { data: refreshData, error: refreshError } = useSWR(
+    "/api/settings/getPackageRefresh",
+    fetcher,
+    {
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Never retry on 404.
+        if (error.status === 404) return;
 
-      // Only retry up to 10 times.
-      if (retryCount >= 10) return;
+        // Only retry up to 10 times.
+        if (retryCount >= 10) return;
 
-      // Retry after 5 seconds.
-      setTimeout(() => revalidate({ retryCount }), 2000);
-    },
-    loadingTimeout: 3000,
-  });
+        // Retry after 5 seconds.
+        setTimeout(() => revalidate({ retryCount }), 2000);
+      },
+      loadingTimeout: 3000,
+    }
+  );
+
+  const { data: lastRefreshData, error: lastRefreshError } = useSWR(
+    "/api/user/getLastRefreshTime",
+    fetcher,
+    {
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Never retry on 404.
+        if (error.status === 404) return;
+
+        // Only retry up to 10 times.
+        if (retryCount >= 10) return;
+
+        // Retry after 5 seconds.
+        setTimeout(() => revalidate({ retryCount }), 2000);
+      },
+      loadingTimeout: 3000,
+    }
+  );
+
+  const { data: packageData, error: packageError } = useSWR(
+    "/api/packages/get",
+    fetcher,
+    {
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Never retry on 404.
+        if (error.status === 404) return;
+
+        // Only retry up to 10 times.
+        if (retryCount >= 10) return;
+
+        // Retry after 5 seconds.
+        setTimeout(() => revalidate({ retryCount }), 2000);
+      },
+      loadingTimeout: 3000,
+    }
+  );
 
   useEffect(() => {
-    if (error) {
-      console.error(error);
+    if (refreshError) {
+      console.error(refreshError);
       return;
     }
 
-    if (data) {
-      setPackages(data);
+    if (refreshData) {
+      setRefreshTimeInHours(refreshData.time);
       return;
     }
-  }, [data, error]);
+  }, [refreshData, refreshError]);
 
-  const checkout = async () => {
-    const { data, error } = await supabase.functions.invoke(
-      "create-stripe-checkout"
+  useEffect(() => {
+    if (lastRefreshError) {
+      console.error(lastRefreshError);
+      return;
+    }
+
+    if (lastRefreshData) {
+      setLastRefreshTimestamp(
+        new Date(
+          (lastRefreshData as UserLastRefreshResponse).lastRefreshTimestamp
+        )
+      );
+      return;
+    }
+  }, [lastRefreshData, lastRefreshError]);
+
+  useEffect(() => {
+    if (packageError) {
+      console.error(packageError);
+      return;
+    }
+
+    if (packageData) {
+      setPackages(packageData);
+      return;
+    }
+  }, [packageData, packageError]);
+
+  const callCreatePackage = async () => {
+    if (!user || !user.id) {
+      return;
+    }
+    // call function
+    await supabase.functions.invoke("create-new-package", {
+      body: JSON.stringify({ userId: user?.id }),
+    });
+  };
+
+  const [shouldShowRefreshButton, setShouldShowRefreshButton] = useState(false);
+  const [shouldSuspendRefreshContent, setShouldSuspendRefreshContent] =
+    useState(true);
+
+  useEffect(() => {
+    setShouldShowRefreshButton(
+      (refreshData || refreshError) &&
+        (lastRefreshData || lastRefreshError) &&
+        lastRefreshTimestamp != null &&
+        refreshTimeInHours != null &&
+        Math.abs(lastRefreshTimestamp.getTime() - new Date().getTime()) /
+          3.6e6 >
+          refreshTimeInHours
     );
 
-    if (error) {
-      console.error(error);
-      return;
+    if (
+      (refreshData || refreshError) &&
+      (lastRefreshData || lastRefreshError)
+    ) {
+      setShouldSuspendRefreshContent(false);
     }
-
-    const sessionId = data.id;
-
-    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY!);
-    const result = await stripe?.redirectToCheckout({
-      sessionId: sessionId,
-    });
-
-    if (result?.error) {
-      console.error(result?.error.message);
-      router.push("/help?error=purchasing%20a%20package");
-    }
-  };
+  }, [
+    refreshData,
+    refreshError,
+    lastRefreshData,
+    lastRefreshError,
+    refreshTimeInHours,
+    lastRefreshTimestamp,
+  ]);
 
   return (
     <>
@@ -93,10 +189,33 @@ function Dashboard() {
         flex="grow"
       >
         <Box align="center" direction="column" margin={{ top: "medium" }}>
-          <Button label="purchase a new package" onClick={() => checkout()} />
+          {!shouldSuspendRefreshContent ? (
+            shouldShowRefreshButton ? (
+              <Button
+                label={"get $5 more for free"}
+                onClick={() => callCreatePackage()}
+              />
+            ) : (
+              <Box align="center" gap="small" direction="column">
+                <Text>get another $5 for free in</Text>
+                <Clock
+                  type="digital"
+                  run="backward"
+                  time={new Date(
+                    lastRefreshTimestamp!.getTime() +
+                      refreshTimeInHours! * 3.6e6 -
+                      new Date().getTime()
+                  ).toISOString()}
+                />
+              </Box>
+            )
+          ) : (
+            <></>
+          )}
+
           <Box gap="small" align="center">
             <Heading>your packages</Heading>
-            {!data ? (
+            {!packageData ? (
               <Spinner size="xlarge" />
             ) : (
               <DataTable

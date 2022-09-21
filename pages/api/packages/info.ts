@@ -2,7 +2,7 @@ import { withApiAuth } from "@supabase/auth-helpers-nextjs";
 import { NextApiRequest, NextApiResponse } from "next";
 import { CompletePackage, PackageInfoResponse } from "../../../types/package";
 
-export default withApiAuth(async function Info(
+export default withApiAuth(async function info(
   req: NextApiRequest,
   res: NextApiResponse<any>,
   supabase
@@ -48,8 +48,6 @@ export default withApiAuth(async function Info(
       body: { packageId: row.id },
     })
   ).data;
-
-  console.log(infoResponse);
 
   if (!infoResponse) {
     return res.status(500).json({ message: "something went wrong!" });

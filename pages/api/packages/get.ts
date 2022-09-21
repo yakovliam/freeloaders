@@ -2,7 +2,7 @@ import { withApiAuth } from "@supabase/auth-helpers-nextjs";
 import { NextApiRequest, NextApiResponse } from "next";
 import { CompletePackage, PackageInfoResponse } from "../../../types/package";
 
-export default withApiAuth(async function Get(
+export default withApiAuth(async function get(
   req: NextApiRequest,
   res: NextApiResponse<any>,
   supabase
