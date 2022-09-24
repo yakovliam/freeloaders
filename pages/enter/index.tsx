@@ -64,7 +64,7 @@ const SignIn: NextPage = () => {
       <Box
         align="center"
         direction="column"
-        background="graph-2"
+        background="white"
         pad="medium"
         flex="grow"
       >
@@ -77,7 +77,13 @@ const SignIn: NextPage = () => {
               message={notificationMessage}
             />
           )}
-          <Box background="light-1" round gap="small" pad={"medium"}>
+          <Box
+            background="white"
+            round="small"
+            elevation="large"
+            gap="small"
+            pad={"medium"}
+          >
             <Box direction="row" overflow={"none"}>
               <TextInput
                 placeholder="UC Email"

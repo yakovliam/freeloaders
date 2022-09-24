@@ -30,7 +30,7 @@ const Help: NextPage = () => {
         align="center"
         direction="column"
         gap="large"
-        background="graph-2"
+        background="white"
         pad="medium"
         flex="grow"
       >
@@ -54,10 +54,10 @@ const Help: NextPage = () => {
           <Heading>about us</Heading>
           <Box width={"medium"}>
             <Text textAlign="center">
-              FreeLoaders @ UC provides access to laundry services at UC for a
-              lower cost than the competition. We partner with CSC ServiceWorks
-              at UC to provide these services in a more ethical way by cutting
-              out the vendor fees through our own transaction system.
+              FreeLoaders @ UC provides access to laundry services at UC for no
+              cost to students. We partner with CSC ServiceWorks to provide
+              these services in a more ethical way by cutting out the vendor
+              fees through our own transaction system.
             </Text>
           </Box>
         </Box>

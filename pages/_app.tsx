@@ -5,8 +5,6 @@ import { Grommet } from "grommet";
 import { theme } from "../theme/theme";
 import Layout from "../components/layout/Layout";
 import React from "react";
-// import Device from "../components/device";
-// import NotMobile from "../components/views/notmobile/NotMobile";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "../utils/supabase";
 import { SWRConfig } from "swr";

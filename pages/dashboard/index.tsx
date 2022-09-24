@@ -6,19 +6,17 @@ import {
   Button,
   Clock,
   DataTable,
+  Header,
   Heading,
   Meter,
   Paragraph,
   Spinner,
   Text,
 } from "grommet";
-import { Login } from "grommet-icons";
+import { CaretNext } from "grommet-icons";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import {
-  CompletePackage,
-  FreePackageRefreshTimeInHoursResponse,
-} from "../../types/package";
+import { CompletePackage } from "../../types/package";
 import useSWR from "swr";
 import { supabase } from "../../utils/supabase";
 import { useUser } from "@supabase/auth-helpers-react";
@@ -30,6 +28,7 @@ const fetcher = (args: any) => fetch(args).then((res) => res.json());
 
 function Dashboard() {
   const router = useRouter();
+  const [loadingNewPackage, setLoadingNewPackage] = useState(false);
   const [packages, setPackages] = useState<CompletePackage[]>([]);
   const [refreshTimeInHours, setRefreshTimeInHours] = useState<number | null>(
     null
@@ -137,10 +136,17 @@ function Dashboard() {
     if (!user || !user.id) {
       return;
     }
+    setLoadingNewPackage(true);
     // call function
-    await supabase.functions.invoke("create-new-package", {
-      body: JSON.stringify({ userId: user?.id }),
-    });
+    await supabase.functions
+      .invoke("create-new-package", {
+        body: JSON.stringify({ userId: user?.id }),
+      })
+      .finally(() => {
+        setLoadingNewPackage(false);
+      });
+
+    router.push("/dashboard/loading");
   };
 
   const [shouldShowRefreshButton, setShouldShowRefreshButton] = useState(false);
@@ -173,6 +179,20 @@ function Dashboard() {
     lastRefreshTimestamp,
   ]);
 
+  const determineBarColor = (pack: CompletePackage) => {
+    const percent = (pack.currentBalance / pack.initialBalance) * 100;
+
+    if (percent <= 20) {
+      return "accent-1";
+    } else if (percent <= 50) {
+      return "accent-2";
+    } else if (percent >= 100) {
+      return "status-ok";
+    } else {
+      return "neutral-1";
+    }
+  };
+
   return (
     <>
       <Head>
@@ -184,17 +204,21 @@ function Dashboard() {
       <Box
         align="center"
         direction="column"
-        background="graph-2"
+        background="white"
         pad="medium"
         flex="grow"
       >
         <Box align="center" direction="column" margin={{ top: "medium" }}>
           {!shouldSuspendRefreshContent ? (
             shouldShowRefreshButton ? (
-              <Button
-                label={"get $5 more for free"}
-                onClick={() => callCreatePackage()}
-              />
+              loadingNewPackage ? (
+                <Spinner size="xlarge" />
+              ) : (
+                <Button
+                  label={"get $5 more for free"}
+                  onClick={() => callCreatePackage()}
+                />
+              )
             ) : (
               <Box align="center" gap="small" direction="column">
                 <Text>get another $5 for free in</Text>
@@ -218,65 +242,88 @@ function Dashboard() {
             {!packageData ? (
               <Spinner size="xlarge" />
             ) : (
-              <DataTable
-                columns={[
-                  {
-                    property: "createdAt",
-                    header: <Text>date</Text>,
-                    primary: true,
-                    render: (datum) => (
-                      <Text>
-                        {new Date(datum.createdAt).toLocaleDateString()}
-                      </Text>
-                    ),
-                  },
-                  {
-                    property: "balance",
-                    header: "balance",
-                    render: (datum) => (
+              <Box gap="large" justify="around">
+                {packages
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  )
+                  .map((pack) => {
+                    return (
                       <Box
-                        pad={{ vertical: "xsmall" }}
-                        direction="row"
+                        key={pack.id}
+                        round="small"
+                        elevation="large"
+                        background={"white"}
+                        pad="medium"
                         align="center"
                         gap="small"
                       >
-                        <Paragraph>
-                          {datum.currentBalance !== -1
-                            ? "$" + datum.currentBalance
-                            : "??"}
-                        </Paragraph>
+                        <Box direction="row">
+                          {pack.currentBalance === -1 ? (
+                            <Text
+                              weight={"bold"}
+                              size="3xl"
+                              color={"status-warning"}
+                            >
+                              check later
+                            </Text>
+                          ) : (
+                            <Text
+                              weight={"bold"}
+                              size="3xl"
+                              color={"status-ok"}
+                            >
+                              ${pack.currentBalance}
+                            </Text>
+                          )}
+                          <Text weight={"bold"} size={"3xl"} color={"light-6"}>
+                            /${pack.initialBalance}
+                          </Text>
+                        </Box>
                         <Meter
+                          background="light-3"
+                          type="bar"
+                          round
                           values={[
                             {
+                              color: determineBarColor(pack),
                               value:
-                                (datum.currentBalance / datum.initialBalance) *
+                                (pack.currentBalance / pack.initialBalance) *
                                 100,
+                              label: "sixty",
+                              onClick: () => {},
                             },
                           ]}
-                          thickness="small"
-                          size="small"
+                          aria-label="meter"
                         />
-                        <Paragraph>${datum.initialBalance}</Paragraph>
+                        <Box
+                          align="center"
+                          direction="row"
+                          gap="small"
+                          width="100%"
+                        >
+                          <Box flex={{ grow: 2 }} width="2xs" />
+                          <Box flex={{ grow: 2 }} align="center">
+                            <Text>
+                              {new Date(pack.createdAt).toLocaleDateString()}
+                            </Text>
+                          </Box>
+                          <Box flex={{ grow: 1 }} width="2xs" align="end">
+                            <Button
+                              onClick={() => {
+                                router.push("/dashboard/info/" + pack.id);
+                              }}
+                              secondary
+                              icon={<CaretNext />}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
-                    ),
-                  },
-                  {
-                    property: "access",
-                    header: <Text>use</Text>,
-                    render: (datum) => (
-                      <Box pad={{ vertical: "xsmall" }}>
-                        <Button
-                          icon={<Login />}
-                          onClick={() => {
-                            router.push("/dashboard/info/" + datum.id);
-                          }}
-                        />
-                      </Box>
-                    ),
-                  },
-                ]}
-                data={packages}
-              />
+                    );
+                  })}
+              </Box>
             )}
           </Box>
         </Box>

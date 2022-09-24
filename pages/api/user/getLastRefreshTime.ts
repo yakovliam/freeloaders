@@ -24,7 +24,6 @@ export default withApiAuth(async function getLastRefreshTime(
 
   // reformat data
   const row = data[0];
-
   const lastRefreshTimestamp = new Date(row.last_free_package);
 
   const userLastRefreshResponse: UserLastRefreshResponse = {

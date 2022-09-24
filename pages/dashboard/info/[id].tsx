@@ -62,7 +62,7 @@ const Info: NextPage = () => {
       <Box
         align="center"
         direction="column"
-        background="graph-2"
+        background="white"
         pad="medium"
         flex="grow"
       >
@@ -83,17 +83,28 @@ const Info: NextPage = () => {
               <>
                 {" "}
                 <Box
-                  round
+                  round="small"
                   background={"dark-1"}
                   pad="medium"
                   margin={{ bottom: "large" }}
                 >
-                  <Text weight={"bold"} size="3xl" color={"status-ok"}>
-                    ${completePackage?.currentBalance}
-                  </Text>
+                  {completePackage.currentBalance === -1 ? (
+                    <Text weight={"bold"} size="3xl" color={"status-warning"}>
+                      check later
+                    </Text>
+                  ) : (
+                    <Text weight={"bold"} size="3xl" color={"status-ok"}>
+                      ${completePackage.currentBalance}
+                    </Text>
+                  )}
                 </Box>
                 <Box gap="large" align="center">
-                  <Box background={"light-1"} pad="medium" round>
+                  <Box
+                    background={"white"}
+                    elevation="large"
+                    pad="medium"
+                    round
+                  >
                     <Box direction="row" gap={"medium"}>
                       <Paragraph>email:</Paragraph>
                       <Paragraph>{completePackage?.email}</Paragraph>

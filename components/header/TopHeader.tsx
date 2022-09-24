@@ -14,20 +14,21 @@ function TopHeader() {
     router.reload();
   };
 
+  const dashboard = () => {
+    router.push("/dashboard");
+  };
+
   return (
-    <Header background="brand">
+    <Header background="light-4">
       <Button icon={<Home />} hoverIndicator onClick={() => router.push("/")} />
       {user && (
         <Box direction="row">
-          <Button
-            icon={<Dashboard />}
-            onClick={() => {
-              router.push("/dashboard");
-            }}
-          />
           <Menu
             label={user.email?.substring(0, user.email?.indexOf("@"))}
-            items={[{ label: "logout", onClick: signOut }]}
+            items={[
+              { label: "dashboard", onClick: dashboard },
+              { label: "logout", onClick: signOut },
+            ]}
           />
         </Box>
       )}
