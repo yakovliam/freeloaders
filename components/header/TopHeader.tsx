@@ -1,4 +1,4 @@
-import { Box, Button, Header, Menu } from "grommet";
+import { Anchor, Box, Button, Header, Menu } from "grommet";
 import { Dashboard, Home } from "grommet-icons";
 import { useRouter } from "next/router";
 import { supabase } from "../../utils/supabase";
@@ -20,7 +20,17 @@ function TopHeader() {
 
   return (
     <Header background="light-4">
-      <Button icon={<Home />} hoverIndicator onClick={() => router.push("/")} />
+      <Box direction="row" align="center" gap="small">
+        <Button
+          icon={<Home />}
+          hoverIndicator
+          onClick={() => router.push("/")}
+        />
+        <Anchor
+          href="https://www.buymeacoffee.com/ucfreeloaders"
+          label="donate"
+        />
+      </Box>
       {user && (
         <Box direction="row">
           <Menu

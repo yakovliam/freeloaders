@@ -1,4 +1,4 @@
-import { Box, Button, Heading, Text, Image } from "grommet";
+import { Box, Button, Heading, Text, Image, Anchor } from "grommet";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -63,6 +63,12 @@ const Home: NextPage = () => {
         flex="grow"
       >
         <Box align="center" direction="column">
+          <Text textAlign="center">
+            <Anchor
+              href="https://www.buymeacoffee.com/ucfreeloaders"
+              label="click here to donate. we're saving you money after all."
+            />
+          </Text>
           <Heading>FreeLoaders</Heading>
           <Text>
             pay less for <em>essential</em> services!
