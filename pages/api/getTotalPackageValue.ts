@@ -13,8 +13,6 @@ async function getTotalPackageValue(
     return res.status(500).json({ message: "something went wrong!" });
   }
 
-  console.log(response);
-
   res.json(response.data as PackageValueResponse);
 }
 
