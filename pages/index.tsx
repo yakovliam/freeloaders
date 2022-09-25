@@ -70,9 +70,7 @@ const Home: NextPage = () => {
             />
           </Text>
           <Heading>FreeLoaders</Heading>
-          <Text>
-            pay less for <em>essential</em> services!
-          </Text>
+          <Text>it&apos;s free laundry, forever.</Text>
         </Box>
         <Box align="center">
           <Button
