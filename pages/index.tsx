@@ -6,6 +6,7 @@ import { useUser } from "@supabase/auth-helpers-react";
 import { useEffect, useState } from "react";
 import { PackageValueResponse } from "../types/packageValueResponse";
 import useSWR from "swr";
+import PartiAppIcon from "../public/parti-app-logo.png";
 
 const fetcher = (args: any) => fetch(args).then((res) => res.json());
 
@@ -96,6 +97,23 @@ const Home: NextPage = () => {
         ) : (
           <></>
         )}
+        <Box align="center">
+          <Text size="xlarge">
+            Also,{" "}
+            <Anchor
+              href={"https://apps.apple.com/us/app/parti/id1441555588"}
+              label="download the parti app!"
+            />
+            <Box justify="center" align="center">
+              <Image
+                alt="parti-app-icon"
+                src={PartiAppIcon.src}
+                width={50}
+                height={50}
+              />
+            </Box>
+          </Text>
+        </Box>
       </Box>
     </>
   );
